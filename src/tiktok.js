@@ -62,7 +62,7 @@ function json(data, status = 200) {
       "content-type": "application/json; charset=UTF-8"
     }
   });
-}        result: {
+}}        result: {
           title: data.data.title || "-",
           username: data.data.author?.unique_id || "-",
           thumbnail: data.data.cover || "-",
