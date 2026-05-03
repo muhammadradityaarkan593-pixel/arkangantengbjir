@@ -1,4 +1,4 @@
-import docsHtml from '../docs.html';
+import docsHtml from './docs.html';
 
 export default {
   async fetch(request) {
