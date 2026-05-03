@@ -29,11 +29,45 @@ export async function handleTikTok(request) {
     }
 
     const host = reqUrl.origin;
+    const resData = data.data;
 
-    // Bagian yang diperbaiki untuk menghindari error build "Expected ; but found :"
+    // Memisahkan objek result untuk menghindari error parser Cloudflare
+    const videoUrl = host + "/file/video.mp4?src=" + encodeURIComponent(resData.play || "");
+    const audioUrl = host + "/file/audio.mp3?src=" + encodeURIComponent(resData.music || "");
+
+    const finalResult = {
+      title: resData.title || "-",
+      username: resData.author?.unique_id || "-",
+      thumbnail: resData.cover || "-",
+      download: {
+        video: videoUrl,
+        audio: audioUrl
+      }
+    };
+
     return json({
       status: true,
       creator: "Arkan Hosting",
+      result: finalResult
+    });
+
+  } catch (err) {
+    return json({
+      status: false,
+      message: err.message || "Unknown error"
+    }, 500);
+  }
+}
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data, null, 2), {
+    status: status,
+    headers: {
+      "content-type": "application/json; charset=UTF-8",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
+}
       result: {
         title: data.data.title ?? "-",
         username: data.data.author?.unique_id ?? "-",
