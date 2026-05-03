@@ -3,7 +3,10 @@ export async function handleTikTok(request) {
   const link = reqUrl.searchParams.get("url");
 
   if (!link) {
-    return json({ status: false, message: "Masukkan parameter url" }, 400);
+    return json({
+      status: false,
+      message: "Masukkan parameter url"
+    }, 400);
   }
 
   try {
@@ -19,7 +22,10 @@ export async function handleTikTok(request) {
     const data = await api.json();
 
     if (!data || !data.data) {
-      return json({ status: false, message: "Video tidak ditemukan" }, 500);
+      return json({
+        status: false,
+        message: "Video tidak ditemukan / API error"
+      }, 500);
     }
 
     const host = reqUrl.origin;
@@ -35,6 +41,25 @@ export async function handleTikTok(request) {
           video: host + "/file/video.mp4?src=" + encodeURIComponent(data.data.play || ""),
           audio: host + "/file/audio.mp3?src=" + encodeURIComponent(data.data.music || "")
         }
+      }
+    });
+
+  } catch (err) {
+    return json({
+      status: false,
+      message: err.message || "Unknown error"
+    }, 500);
+  }
+}
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=UTF-8"
+    }
+  });
+}        }
       }
     });
 
