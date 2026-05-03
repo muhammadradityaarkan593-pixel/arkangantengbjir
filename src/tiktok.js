@@ -21,7 +21,6 @@ export async function handleTikTok(request) {
 
     const data = await api.json();
 
-    // Debug - lihat raw response
     return json({ status: "debug", raw: data });
 
   } catch (err) {
@@ -40,52 +39,7 @@ function json(data, status = 200) {
       "Access-Control-Allow-Origin": "*"
     }
   });
-}      title: resData.title || "-",
-      username: (resData.author && resData.author.unique_id) || "-",
-      thumbnail: resData.cover || "-",
-      download: {
-        video: videoUrl,
-        audio: audioUrl
-      }
-    };
-
-    return json({
-      status: true,
-      creator: "Arkan Hosting",
-      result: finalResult
-    });
-
-  } catch (err) {
-    return json({
-      status: false,
-      message: err.message || "Unknown error"
-    }, 500);
-  }
-}
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data, null, 2), {
-    status: status,
-    headers: {
-      "content-type": "application/json; charset=UTF-8",
-      "Access-Control-Allow-Origin": "*"
-    }
-  });
-}    const finalResult = {
-      title: resData.title || "-",
-      username: (resData.author && resData.author.unique_id) || "-",
-      thumbnail: resData.cover || "-",
-      download: {
-        video: videoUrl,
-        audio: audioUrl
-      }
-    };
-
-    return json({
-      status: true,
-      creator: "Arkan Hosting",
-      result: finalResult
-    });
+}    });
 
   } catch (err) {
     return json({
