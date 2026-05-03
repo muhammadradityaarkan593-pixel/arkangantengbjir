@@ -30,10 +30,39 @@ export async function handleTikTok(request) {
 
     const host = reqUrl.origin;
 
+    // Bagian yang diperbaiki untuk menghindari error build "Expected ; but found :"
     return json({
       status: true,
       creator: "Arkan Hosting",
       result: {
+        title: data.data.title ?? "-",
+        username: data.data.author?.unique_id ?? "-",
+        thumbnail: data.data.cover ?? "-",
+        download: {
+          video: `${host}/file/video.mp4?src=${encodeURIComponent(data.data.play ?? "")}`,
+          audio: `${host}/file/audio.mp3?src=${encodeURIComponent(data.data.music ?? "")}`
+        }
+      }
+    });
+
+  } catch (err) {
+    return json({
+      status: false,
+      message: err.message || "Unknown error"
+    }, 500);
+  }
+}
+
+// Fungsi helper untuk response JSON
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=UTF-8",
+      "Access-Control-Allow-Origin": "*" // Tambahan agar bisa diakses dari frontend mana saja
+    }
+  });
+}
         title: data.data.title || "-",
         username: (data.data.author && data.data.author.unique_id) || "-",
         thumbnail: data.data.cover || "-",
