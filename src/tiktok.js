@@ -60,8 +60,7 @@ function json(data, status = 200) {
       "content-type": "application/json; charset=UTF-8"
     }
   });
-}    });
-
+                                               }
   } catch (err) {
     return json({
       status: false,
