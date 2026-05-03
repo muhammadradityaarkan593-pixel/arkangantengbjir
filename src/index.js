@@ -1,46 +1,47 @@
 import home from "../index.html";
 import docs from "./docs.html";
 import { handleTikTok } from "./tiktok.js";
-import { handleFile } from "./file.js";
 
 export default {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    // Home Page
     if (url.pathname === "/") {
       return new Response(home, {
-        headers: { "content-type": "text/html;charset=UTF-8" }
+        headers: {
+          "content-type": "text/html; charset=UTF-8"
+        }
       });
     }
 
+    // Docs
     if (url.pathname === "/docs") {
       return new Response(docs, {
-        headers: { "content-type": "text/html;charset=UTF-8" }
+        headers: {
+          "content-type": "text/html; charset=UTF-8"
+        }
       });
     }
 
+    // API TikTok
     if (url.pathname.startsWith("/api/tiktok")) {
       return handleTikTok(request);
     }
 
+    // File Proxy
     if (url.pathname.startsWith("/file/")) {
-      return handleFile(request);
+      const src = url.searchParams.get("src");
+      if (!src) {
+        return new Response("No source", { status: 400 });
+      }
+
+      const res = await fetch(decodeURIComponent(src));
+      return new Response(res.body, {
+        headers: res.headers
+      });
     }
 
     return new Response("404 Not Found", { status: 404 });
   }
-};    if (url.pathname.startsWith('/api/tiktok')) {
-      return handleTikTok(request);
-    }
-
-    return new Response('Not Found', { status: 404 });
-  }
 };
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: { 'content-type': 'application/json; charset=utf-8' }
-  });
-}
-
