@@ -17,16 +17,16 @@ export default {
           "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
           "user-agent": "Mozilla/5.0"
         },
-        body: `url=${encodeURIComponent(link)}`
+        body: "url=" + encodeURIComponent(link)
       });
 
       const data = await api.json();
 
-      // VALIDASI RESPONSE
+      // validasi response
       if (!data || !data.data) {
         return json({
           status: false,
-          message: "Video tidak ditemukan / API sedang error"
+          message: "Video tidak ditemukan / API error"
         }, 500);
       }
 
@@ -35,6 +35,34 @@ export default {
       return json({
         status: true,
         creator: "Arkan Hosting",
+        result: {
+          title: data.data.title || "-",
+          username: (data.data.author && data.data.author.unique_id) || "-",
+          thumbnail: data.data.cover || "-",
+          download: {
+            video: host + "/file/video.mp4?src=" + encodeURIComponent(data.data.play || ""),
+            audio: host + "/file/audio.mp3?src=" + encodeURIComponent(data.data.music || "")
+          }
+        }
+      });
+
+    } catch (err) {
+      return json({
+        status: false,
+        message: (err && err.message) || "Unknown error"
+      }, 500);
+    }
+  }
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data, null, 2), {
+    status: status,
+    headers: {
+      "content-type": "application/json; charset=UTF-8"
+    }
+  });
+}        creator: "Arkan Hosting",
         result: {
           title: data.data.title || "-",
           username: (data.data.author && data.data.author.unique_id) || "-",
