@@ -1,5 +1,6 @@
 import home from "../index.html";
 import docs from "./docs.html";
+import { handleTikTok } from './tiktok.js';
 
 export default {
   async fetch(request) {
@@ -20,3 +21,31 @@ export default {
     return new Response("404 Not Found", { status: 404 });
   }
 };
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/') {
+      return json({
+        status: true,
+        creator: 'Arkan Hosting',
+        endpoints: ['/api/tiktok?url=LINK_TIKTOK']
+      });
+    }
+
+    if (url.pathname.startsWith('/api/tiktok')) {
+      return handleTikTok(request);
+    }
+
+    return new Response('Not Found', { status: 404 });
+  }
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8' }
+  });
+}
+
