@@ -1,16 +1,11 @@
 import home from "../index.html";
 import docs from "./docs.html";
-import { handleTikTok } from './tiktok.js';
+import { handleTikTok } from "./tiktok.js";
+import { handleFile } from "./file.js";
 
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-
-    if (url.pathname === "/docs") {
-      return new Response(docs, {
-        headers: { "content-type": "text/html;charset=UTF-8" }
-      });
-    }
 
     if (url.pathname === "/") {
       return new Response(home, {
@@ -18,23 +13,23 @@ export default {
       });
     }
 
-    return new Response("404 Not Found", { status: 404 });
-  }
-};
-
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-
-    if (url.pathname === '/') {
-      return json({
-        status: true,
-        creator: 'Arkan Hosting',
-        endpoints: ['/api/tiktok?url=LINK_TIKTOK']
+    if (url.pathname === "/docs") {
+      return new Response(docs, {
+        headers: { "content-type": "text/html;charset=UTF-8" }
       });
     }
 
-    if (url.pathname.startsWith('/api/tiktok')) {
+    if (url.pathname.startsWith("/api/tiktok")) {
+      return handleTikTok(request);
+    }
+
+    if (url.pathname.startsWith("/file/")) {
+      return handleFile(request);
+    }
+
+    return new Response("404 Not Found", { status: 404 });
+  }
+};    if (url.pathname.startsWith('/api/tiktok')) {
       return handleTikTok(request);
     }
 
