@@ -21,20 +21,26 @@ export async function handleTikTok(request) {
 
     const data = await api.json();
 
-    // Debug sementara
+    // Debug - lihat raw response
+    return json({ status: "debug", raw: data });
+
+  } catch (err) {
     return json({
-      status: "debug",
-      raw: data
-    });
+      status: false,
+      message: err.message || "Unknown error"
+    }, 500);
+  }
+}
 
-    const host = reqUrl.origin;
-    const resData = data.data;
-
-    const videoUrl = host + "/file/video.mp4?src=" + encodeURIComponent(resData.play || "");
-    const audioUrl = host + "/file/audio.mp3?src=" + encodeURIComponent(resData.music || "");
-
-    const finalResult = {
-      title: resData.title || "-",
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data, null, 2), {
+    status: status,
+    headers: {
+      "content-type": "application/json; charset=UTF-8",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
+}      title: resData.title || "-",
       username: (resData.author && resData.author.unique_id) || "-",
       thumbnail: resData.cover || "-",
       download: {
