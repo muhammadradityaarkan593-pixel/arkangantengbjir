@@ -7,17 +7,42 @@ export async function handleTikTok(request) {
   }
 
   try {
-    const api = await fetch("https://www.tikwm.com/api/", {
+    const api = await fetch("https://api.tikmate.app/api/lookup", {
       method: "POST",
       headers: {
-        "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "content-type": "application/x-www-form-urlencoded",
         "user-agent": "Mozilla/5.0"
       },
       body: "url=" + encodeURIComponent(link)
     });
 
     const data = await api.json();
-    return json({ status: "debug", raw: data });
+
+    if (!data || !data.token) {
+      return json({ status: false, message: "Video tidak ditemukan / API error", raw: data }, 500);
+    }
+
+    const host = reqUrl.origin;
+    const videoUrl = host + "/file/video.mp4?src=" + encodeURIComponent(
+      "https://tikmate.app/download/" + data.token + "/" + data.id + ".mp4"
+    );
+    const audioUrl = host + "/file/audio.mp3?src=" + encodeURIComponent(
+      "https://tikmate.app/download/" + data.token + "/" + data.id + ".mp3"
+    );
+
+    return json({
+      status: true,
+      creator: "Arkan Hosting",
+      result: {
+        title: data.desc || "-",
+        username: data.author_name || "-",
+        thumbnail: data.cover || "-",
+        download: {
+          video: videoUrl,
+          audio: audioUrl
+        }
+      }
+    });
 
   } catch (err) {
     return json({ status: false, message: err.message || "Unknown error" }, 500);
