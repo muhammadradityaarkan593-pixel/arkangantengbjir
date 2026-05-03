@@ -1,3 +1,4 @@
+// anjay mabar
 export async function handleTikTok(request) {
   const reqUrl = new URL(request.url);
   const link = reqUrl.searchParams.get("url");
