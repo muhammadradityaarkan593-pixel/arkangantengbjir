@@ -2,6 +2,7 @@ import home from "../index.html";
 import docs from "./docs.html";
 import { handleTikTok } from "./tiktok.js";
 import { handleInstagram } from "./instagram.js";
+import { handleYoutube } from "./youtube.js"; 
 
 export default {
   async fetch(request, env, ctx) {
@@ -33,6 +34,10 @@ export default {
     // API Instagram
     if (url.pathname.startsWith("/api/instagram")) {
       return handleInstagram(request);
+    }
+
+    if (url.pathname.startsWith("/api/youtube")) {
+     return handleYoutube(request);
     }
 
     // File Proxy
