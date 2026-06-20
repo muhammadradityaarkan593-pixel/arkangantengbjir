@@ -1,64 +1,97 @@
-import home from "../index.html";
-import docs from "./docs.html";
-import { handleTikTok } from "./tiktok.js";
-import { handleInstagram } from "./instagram.js";
-import { handleYoutube } from "./youtube.js"; 
+import { handleDashboard } from './dashboard';
+import { handleDocs } from './docs';
+import { validateApiKey, checkRateLimit } from './auth';
 
 export default {
-  async fetch(request, env, ctx) {
+  async fetch(request, env) {
     const url = new URL(request.url);
+    const path = url.pathname;
 
-    // Home Page
-    if (url.pathname === "/") {
-      return new Response(home, {
-        headers: {
-          "content-type": "text/html; charset=UTF-8"
-        }
-      });
+    // ============ DASHBOARD ============
+    if (path === '/dashboard' || path === '/') {
+      return handleDashboard(env);
     }
 
-    // Docs
-    if (url.pathname === "/docs") {
-      return new Response(docs, {
-        headers: {
-          "content-type": "text/html; charset=UTF-8"
-        }
-      });
+    // ============ DOKUMENTASI ============
+    if (path === '/docs') {
+      return handleDocs();
     }
 
-    // API TikTok
-    if (url.pathname.startsWith("/api/tiktok")) {
-      return handleTikTok(request);
-    }
-
-    // API Instagram
-    if (url.pathname.startsWith("/api/instagram")) {
-      return handleInstagram(request);
-    }
-
-    if (url.pathname.startsWith("/api/youtube")) {
-     return handleYoutube(request);
-    }
-
-    // File Proxy
-    if (url.pathname.startsWith("/file/")) {
-      const src = url.searchParams.get("src");
-      if (!src) {
-        return new Response("No source", { status: 400 });
+    // ============ CHAT API ============
+    if (path === '/chat' && request.method === 'POST') {
+      // 1. Validasi API Key
+      const apiKey = request.headers.get('x-api-key');
+      if (!apiKey) {
+        return jsonResponse({ 
+          ok: false, 
+          error: 'API key required. Send x-api-key header' 
+        }, 401);
       }
 
-      const res = await fetch(decodeURIComponent(src));
-      const contentType = res.headers.get("content-type") || "application/octet-stream";
+      const valid = await validateApiKey(apiKey, env);
+      if (!valid) {
+        return jsonResponse({ 
+          ok: false, 
+          error: 'Invalid API key' 
+        }, 403);
+      }
 
-      return new Response(res.body, {
-        headers: {
-          "content-type": contentType,
-          "Content-Disposition": "inline",
-          "Access-Control-Allow-Origin": "*"
+      // 2. Check rate limit
+      const rateLimit = await checkRateLimit(apiKey, env);
+      if (!rateLimit.allowed) {
+        return jsonResponse({ 
+          ok: false, 
+          error: 'Rate limit exceeded. Try again later.',
+          reset_at: rateLimit.resetAt,
+          limit: rateLimit.limit
+        }, 429);
+      }
+
+      // 3. Proses prompt
+      try {
+        const { prompt } = await request.json();
+        if (!prompt) {
+          return jsonResponse({ 
+            ok: false, 
+            error: 'Field "prompt" required' 
+          }, 400);
         }
-      });
+
+        const response = await env.AI.run('@cf/meta/llama-3.2-3b-instruct', {
+          messages: [{ role: 'user', content: prompt }]
+        });
+
+        // 4. Kirim hasil + sisa kuota
+        return jsonResponse({
+          ok: true,
+          result: response,
+          usage: {
+            remaining: rateLimit.remaining,
+            limit: rateLimit.limit,
+            reset_at: rateLimit.resetAt
+          }
+        });
+
+      } catch (error) {
+        return jsonResponse({ 
+          ok: false, 
+          error: error.message 
+        }, 500);
+      }
     }
 
-    return new Response("404 Not Found", { status: 404 });
+    // ============ 404 ============
+    return jsonResponse({ 
+      ok: false, 
+      error: 'Endpoint not found' 
+    }, 404);
   }
 };
+
+// Helper function buat JSON response
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
