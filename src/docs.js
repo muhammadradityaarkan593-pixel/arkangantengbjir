@@ -1,11 +1,11 @@
- <!DOCTYPE html>
+export function handleDocs() {
+  const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>API Documentation - AI Platform</title>
   <style>
-    /* ---------- RESET & GLOBAL ---------- */
     * {
       margin: 0;
       padding: 0;
@@ -29,8 +29,6 @@
     a:hover {
       text-decoration: underline;
     }
-
-    /* ---------- HEADER ---------- */
     .header {
       display: flex;
       justify-content: space-between;
@@ -60,8 +58,6 @@
       color: #4ade80;
       font-weight: 600;
     }
-
-    /* ---------- CARD ---------- */
     .card {
       background: #18181b;
       border-radius: 16px;
@@ -107,8 +103,6 @@
       padding: 0;
       color: #d4d4d8;
     }
-
-    /* ---------- FORM DEMO ---------- */
     .demo-group {
       display: flex;
       flex-direction: column;
@@ -174,8 +168,6 @@
     .btn-secondary:hover {
       background: #52525b;
     }
-
-    /* ---------- RESPONSE BOX ---------- */
     .response-box {
       background: #0b0b12;
       border-radius: 10px;
@@ -204,8 +196,6 @@
     .response-box .ok-false {
       color: #f87171;
     }
-
-    /* ---------- FOOTER ---------- */
     .footer {
       margin-top: 3rem;
       text-align: center;
@@ -214,8 +204,6 @@
       border-top: 1px solid #27272a;
       padding-top: 2rem;
     }
-
-    /* ---------- RESPONSIVE ---------- */
     @media (max-width: 640px) {
       .header {
         flex-direction: column;
@@ -228,23 +216,18 @@
   </style>
 </head>
 <body>
-
 <div class="container">
-
-  <!-- HEADER -->
   <div class="header">
     <h1>📖 API Documentation</h1>
     <div class="badge">⚡ Status: <span>Online</span></div>
   </div>
 
-  <!-- ENDPOINT INFO -->
   <div class="card">
     <h2><span class="emoji">🔗</span> Endpoint</h2>
-    <p><strong>POST</strong> <code id="endpointUrl">https://your-worker.workers.dev/chat</code></p>
-    <p>Base URL: <span id="baseUrlDisplay">https://your-worker.workers.dev</span></p>
+    <p><strong>POST</strong> <code id="endpointUrl">/chat</code></p>
+    <p>Base URL: <span id="baseUrlDisplay">/</span></p>
   </div>
 
-  <!-- AUTH & HEADERS -->
   <div class="card">
     <h2><span class="emoji">🔑</span> Authentication</h2>
     <p>Kirim <code>x-api-key</code> header dengan API key kamu.</p>
@@ -252,13 +235,12 @@
     <p>Dapatkan API key di <a href="/dashboard">Dashboard</a> atau via <code>/generate-key</code>.</p>
   </div>
 
-  <!-- REQUEST / RESPONSE FORMAT -->
   <div class="card">
     <h2><span class="emoji">📦</span> Request &amp; Response</h2>
     <p><strong>Body (JSON):</strong></p>
     <pre><code>{
   "prompt": "Tulis puisi tentang coding",
-  "model": "@cf/meta/llama-3.2-3b-instruct"  // opsional
+  "model": "@cf/meta/llama-3.2-3b-instruct"
 }</code></pre>
     <p><strong>Response Sukses (ok: true):</strong></p>
     <pre><code>{
@@ -279,16 +261,13 @@
 }</code></pre>
   </div>
 
-  <!-- LIVE DEMO -->
   <div class="card">
     <h2><span class="emoji">🧪</span> Live Demo</h2>
     <p>Coba kirim prompt langsung ke API di bawah ini.</p>
-
     <div class="demo-group">
       <label for="apiKeyInput">🔑 API Key</label>
       <input type="text" id="apiKeyInput" placeholder="Masukkan API key kamu" value="ak-xxxxxxxxxxxxxxxx" />
     </div>
-
     <div class="demo-row">
       <div class="demo-group">
         <label for="promptInput">💬 Prompt</label>
@@ -303,29 +282,21 @@
         </select>
       </div>
     </div>
-
     <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">
       <button class="btn" id="sendBtn">🚀 Kirim</button>
       <button class="btn btn-secondary" id="clearBtn">🗑️ Clear</button>
     </div>
-
-    <!-- Response area -->
     <div class="response-box" id="responseBox">
       <span class="label">📨 Response akan muncul di sini</span>
     </div>
   </div>
 
-  <!-- CURL EXAMPLE -->
   <div class="card">
     <h2><span class="emoji">🖥️</span> Contoh cURL</h2>
-    <pre><code id="curlExample">curl -X POST https://your-worker.workers.dev/chat \
-  -H "x-api-key: ak-xxxxxxxxxxxxxxxx" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Halo, siapa kamu?"}'</code></pre>
+    <pre><code id="curlExample">curl -X POST /chat \\\n  -H "x-api-key: ak-xxxxxxxxxxxxxxxx" \\\n  -H "Content-Type: application/json" \\\n  -d '{"prompt": "Halo, siapa kamu?"}'</code></pre>
     <button class="btn btn-secondary" id="copyCurlBtn">📋 Salin cURL</button>
   </div>
 
-  <!-- FOOTER -->
   <div class="footer">
     &copy; 2026 AI Platform — Dibangun dengan ❤️ di atas Cloudflare Workers
   </div>
@@ -333,15 +304,12 @@
 
 <script>
   (function() {
-    // ---------- Ambil base URL dari window.location ----------
-    const baseUrl = window.location.origin; // ambil domain saat ini
+    const baseUrl = window.location.origin;
     document.getElementById('endpointUrl').textContent = baseUrl + '/chat';
     document.getElementById('baseUrlDisplay').textContent = baseUrl;
-    // Update cURL example juga
     document.getElementById('curlExample').textContent =
-      `curl -X POST ${baseUrl}/chat \\\n  -H "x-api-key: ak-xxxxxxxxxxxxxxxx" \\\n  -H "Content-Type: application/json" \\\n  -d '{"prompt": "Halo, siapa kamu?"}'`;
+      'curl -X POST ' + baseUrl + '/chat \\\n  -H "x-api-key: ak-xxxxxxxxxxxxxxxx" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"prompt": "Halo, siapa kamu?"}\'';
 
-    // ---------- DOM refs ----------
     const apiKeyInput = document.getElementById('apiKeyInput');
     const promptInput = document.getElementById('promptInput');
     const modelSelect = document.getElementById('modelSelect');
@@ -350,23 +318,21 @@
     const responseBox = document.getElementById('responseBox');
     const copyCurlBtn = document.getElementById('copyCurlBtn');
 
-    // ---------- Kirim request ----------
     async function sendRequest() {
       const apiKey = apiKeyInput.value.trim();
       const prompt = promptInput.value.trim();
       const model = modelSelect.value;
 
       if (!apiKey) {
-        responseBox.innerHTML = `<span class="label">❌ Error</span>\n${JSON.stringify({ ok: false, error: 'API key wajib diisi' }, null, 2)}`;
+        responseBox.innerHTML = '<span class="label">❌ Error</span>\\n' + JSON.stringify({ ok: false, error: 'API key wajib diisi' }, null, 2);
         return;
       }
       if (!prompt) {
-        responseBox.innerHTML = `<span class="label">❌ Error</span>\n${JSON.stringify({ ok: false, error: 'Prompt tidak boleh kosong' }, null, 2)}`;
+        responseBox.innerHTML = '<span class="label">❌ Error</span>\\n' + JSON.stringify({ ok: false, error: 'Prompt tidak boleh kosong' }, null, 2);
         return;
       }
 
-      // Tampilkan loading
-      responseBox.innerHTML = `<span class="label">⏳ Mengirim...</span>`;
+      responseBox.innerHTML = '<span class="label">⏳ Mengirim...</span>';
 
       try {
         const response = await fetch('/chat', {
@@ -380,31 +346,24 @@
 
         const data = await response.json();
         const pretty = JSON.stringify(data, null, 2);
-        // Warna berdasarkan ok
         const okStatus = data.ok === true ? 'ok-true' : 'ok-false';
-        responseBox.innerHTML = `<span class="label">📨 Response (${response.status})</span>\n<span class="${okStatus}">${pretty}</span>`;
+        responseBox.innerHTML = '<span class="label">📨 Response (' + response.status + ')</span>\\n<span class="' + okStatus + '">' + pretty + '</span>';
       } catch (err) {
-        responseBox.innerHTML = `<span class="label">❌ Network Error</span>\n${err.message}`;
+        responseBox.innerHTML = '<span class="label">❌ Network Error</span>\\n' + err.message;
       }
     }
 
-    // ---------- Event listeners ----------
     sendBtn.addEventListener('click', sendRequest);
-
-    // Enter di prompt juga kirim (Ctrl+Enter)
     promptInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         sendRequest();
       }
     });
-
     clearBtn.addEventListener('click', () => {
       promptInput.value = '';
-      responseBox.innerHTML = `<span class="label">📨 Response akan muncul di sini</span>`;
+      responseBox.innerHTML = '<span class="label">📨 Response akan muncul di sini</span>';
     });
-
-    // Copy cURL
     copyCurlBtn.addEventListener('click', () => {
       const curlText = document.getElementById('curlExample').textContent;
       navigator.clipboard.writeText(curlText).then(() => {
@@ -414,16 +373,17 @@
       }).catch(() => alert('Gagal menyalin, silakan salin manual.'));
     });
 
-    // ---------- Set API key dari URL param (opsional) ----------
     const urlParams = new URLSearchParams(window.location.search);
     const keyParam = urlParams.get('api_key');
     if (keyParam) {
       apiKeyInput.value = keyParam;
     }
-
-    console.log('📖 Docs loaded. Base URL:', baseUrl);
   })();
 </script>
-
 </body>
-</html>
+</html>`;
+
+  return new Response(html, {
+    headers: { 'Content-Type': 'text/html' }
+  });
+}
