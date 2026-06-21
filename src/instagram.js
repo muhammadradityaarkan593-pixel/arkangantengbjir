@@ -1,73 +1,134 @@
-const COBALT_API = "https://api.cobalt.tools/";
-const BASE_URL = "https://arkannhosting.my.id";
+ // ============================================================
+// AUTH.JS - API Key & Rate Limit Management
+// ============================================================
 
-export async function handleInstagram(request) {
-  const url = new URL(request.url);
+/**
+ * Validasi API Key dari KV Storage
+ * @param {string} apiKey - API key yang dikirim user
+ * @param {object} env - Environment variable dari Worker
+ * @returns {Promise<boolean>} - true jika valid, false jika tidak
+ */
+export async function validateApiKey(apiKey, env) {
+  if (!apiKey) return false;
+  
+  // Cek di KV: key = "api_key:xxx", value = "true"
+  const stored = await env.KV.get(`api_key:${apiKey}`);
+  return stored === 'true';
+}
 
-  // CORS preflight
-  if (request.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-      }
-    });
+/**
+ * Cek rate limit per API key (sliding window)
+ * @param {string} apiKey - API key yang dicek
+ * @param {object} env - Environment variable dari Worker
+ * @returns {Promise<object>} - { allowed, limit, remaining, resetAt }
+ */
+export async function checkRateLimit(apiKey, env) {
+  const key = `ratelimit:${apiKey}`;
+  const now = Date.now();
+  const windowMs = 60000; // 1 menit
+  const limit = 200; // Maksimal 200 request per menit
+
+  // Ambil data rate limit dari KV
+  const data = await env.KV.get(key, 'json');
+  let requests = [];
+  let resetAt = new Date(now + windowMs).toISOString();
+
+  // Filter request yang masih dalam window 1 menit
+  if (data && data.requests) {
+    requests = data.requests.filter(timestamp => now - timestamp < windowMs);
   }
 
-  const igUrl = url.searchParams.get("url");
-  if (!igUrl) {
-    return Response.json({ error: "Parameter ?url= diperlukan" }, { status: 400 });
+  // Cek apakah udah mencapai limit
+  if (requests.length >= limit) {
+    return { 
+      allowed: false, 
+      limit, 
+      remaining: 0, 
+      resetAt 
+    };
   }
 
-  try {
-    const cobaltRes = await fetch(COBALT_API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({ url: igUrl })
+  // Tambah request baru ke daftar
+  requests.push(now);
+  await env.KV.put(key, JSON.stringify({ requests }), { expirationTtl: 120 });
+
+  return {
+    allowed: true,
+    limit,
+    remaining: limit - requests.length,
+    resetAt
+  };
+}
+
+/**
+ * Generate API key baru (random)
+ * @returns {string} - API key format: ak-xxxxxxxxxxxxxxxx
+ */
+export function generateApiKey() {
+  const random = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
+  return `ak-${random}`;
+}
+
+/**
+ * Simpan API key ke KV
+ * @param {string} apiKey - API key yang akan disimpan
+ * @param {object} env - Environment variable dari Worker
+ * @param {string} [label] - Label opsional untuk key (misal: "user-1")
+ */
+export async function saveApiKey(apiKey, env, label = '') {
+  const meta = {
+    created_at: new Date().toISOString(),
+    label: label || 'unnamed',
+    last_used: null
+  };
+  
+  await env.KV.put(`api_key:${apiKey}`, 'true');
+  await env.KV.put(`api_key_meta:${apiKey}`, JSON.stringify(meta));
+  
+  return apiKey;
+}
+
+/**
+ * Hapus API key dari KV
+ * @param {string} apiKey - API key yang akan dihapus
+ * @param {object} env - Environment variable dari Worker
+ */
+export async function deleteApiKey(apiKey, env) {
+  await env.KV.delete(`api_key:${apiKey}`);
+  await env.KV.delete(`api_key_meta:${apiKey}`);
+  await env.KV.delete(`ratelimit:${apiKey}`);
+}
+
+/**
+ * List semua API key (dengan metadata)
+ * @param {object} env - Environment variable dari Worker
+ * @returns {Promise<Array>} - Array of { key, meta }
+ */
+export async function listApiKeys(env) {
+  const keys = await env.KV.list({ prefix: 'api_key:' });
+  const result = [];
+  
+  for (const key of keys.keys) {
+    const apiKey = key.name.replace('api_key:', '');
+    const metaRaw = await env.KV.get(`api_key_meta:${apiKey}`, 'json');
+    result.push({
+      key: apiKey,
+      meta: metaRaw || { label: 'unknown' }
     });
+  }
+  
+  return result;
+}
 
-    if (!cobaltRes.ok) {
-      const err = await cobaltRes.json();
-      return Response.json({ error: err?.error?.code || "Gagal fetch dari Cobalt" }, { status: 502 });
-    }
-
-    const data = await cobaltRes.json();
-
-    // Cobalt bisa return single url atau multiple picker
-    if (data.status === "stream" || data.status === "redirect") {
-      const encoded = encodeURIComponent(data.url);
-      return Response.json({
-        status: "success",
-        type: "video",
-        url: data.url,
-        proxy: `${BASE_URL}/file/?src=${encoded}`
-      }, {
-        headers: { "Access-Control-Allow-Origin": "*" }
-      });
-    }
-
-    if (data.status === "picker") {
-      const items = data.picker.map(item => ({
-        type: item.type,
-        url: item.url,
-        proxy: `${BASE_URL}/file/?src=${encodeURIComponent(item.url)}`
-      }));
-      return Response.json({
-        status: "success",
-        type: "picker",
-        items
-      }, {
-        headers: { "Access-Control-Allow-Origin": "*" }
-      });
-    }
-
-    return Response.json({ error: "Response tidak dikenali dari Cobalt", raw: data }, { status: 502 });
-
-  } catch (e) {
-    return Response.json({ error: e.message }, { status: 500 });
+/**
+ * Update last_used timestamp untuk API key
+ * @param {string} apiKey - API key yang dipakai
+ * @param {object} env - Environment variable dari Worker
+ */
+export async function updateLastUsed(apiKey, env) {
+  const metaRaw = await env.KV.get(`api_key_meta:${apiKey}`, 'json');
+  if (metaRaw) {
+    metaRaw.last_used = new Date().toISOString();
+    await env.KV.put(`api_key_meta:${apiKey}`, JSON.stringify(metaRaw));
   }
 }
