@@ -1,516 +1,429 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Arkan API — Under Maintenance</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#04060d;
-  --fg:#a8c0e8;
-  --accent:#f0c060;
-  --red:#ff4d6a;
-  --green:#3dffa0;
-  --dim:#1a2035;
-  --border:#0f1628;
-  --glow:rgba(240,192,96,.12);
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Documentation - AI Platform</title>
+  <style>
+    /* ---------- RESET & GLOBAL ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b0b12;
+      color: #e4e4e7;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    a {
+      color: #f97316;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
 
-html,body{height:100%;overflow:hidden}
-body{
-  background:var(--bg);
-  color:var(--fg);
-  font-family:'Share Tech Mono',monospace;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-}
+    /* ---------- HEADER ---------- */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid #27272a;
+      padding-bottom: 1.5rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f97316, #fb923c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .badge {
+      background: #27272a;
+      padding: 0.3rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      border: 1px solid #3f3f46;
+    }
+    .badge span {
+      color: #4ade80;
+      font-weight: 600;
+    }
 
-/* ── Scanlines ── */
-body::before{
-  content:'';
-  position:fixed;inset:0;
-  background:repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,.15) 2px,
-    rgba(0,0,0,.15) 4px
-  );
-  pointer-events:none;
-  z-index:10;
-  animation:scanroll 8s linear infinite;
-}
-@keyframes scanroll{
-  0%{background-position:0 0}
-  100%{background-position:0 100px}
-}
+    /* ---------- CARD ---------- */
+    .card {
+      background: #18181b;
+      border-radius: 16px;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      border: 1px solid #27272a;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .card h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #f97316;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card h2 .emoji {
+      font-size: 1.6rem;
+    }
+    .card p,
+    .card li {
+      color: #a1a1aa;
+    }
+    .card code {
+      background: #27272a;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: #fbbf24;
+    }
+    .card pre {
+      background: #0b0b12;
+      padding: 1rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      border-left: 4px solid #f97316;
+      margin: 1rem 0;
+    }
+    .card pre code {
+      background: transparent;
+      padding: 0;
+      color: #d4d4d8;
+    }
 
-/* ── Grid bg ── */
-body::after{
-  content:'';
-  position:fixed;inset:0;
-  background-image:
-    linear-gradient(rgba(240,192,96,.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(240,192,96,.025) 1px,transparent 1px);
-  background-size:48px 48px;
-  pointer-events:none;
-  z-index:0;
-}
+    /* ---------- FORM DEMO ---------- */
+    .demo-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin: 1.2rem 0;
+    }
+    .demo-group label {
+      font-weight: 500;
+      color: #d4d4d8;
+    }
+    .demo-group input,
+    .demo-group select,
+    .demo-group textarea {
+      background: #0b0b12;
+      border: 1px solid #3f3f46;
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      color: #e4e4e7;
+      font-size: 0.95rem;
+      transition: border 0.2s;
+    }
+    .demo-group input:focus,
+    .demo-group select:focus,
+    .demo-group textarea:focus {
+      outline: none;
+      border-color: #f97316;
+    }
+    .demo-group textarea {
+      min-height: 80px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    .demo-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .demo-row .demo-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    .btn {
+      background: #f97316;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      padding: 0.8rem 2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-size: 1rem;
+      align-self: flex-start;
+    }
+    .btn:hover {
+      background: #ea580c;
+    }
+    .btn:active {
+      transform: scale(0.97);
+    }
+    .btn-secondary {
+      background: #3f3f46;
+    }
+    .btn-secondary:hover {
+      background: #52525b;
+    }
 
-/* ── Glow orb ── */
-.orb{
-  position:fixed;
-  top:50%;left:50%;
-  transform:translate(-50%,-60%);
-  width:600px;height:600px;
-  background:radial-gradient(ellipse,rgba(240,192,96,.06) 0%,transparent 65%);
-  pointer-events:none;
-  z-index:0;
-  animation:orb-pulse 4s ease-in-out infinite;
-}
-@keyframes orb-pulse{
-  0%,100%{opacity:.6;transform:translate(-50%,-60%) scale(1)}
-  50%{opacity:1;transform:translate(-50%,-60%) scale(1.08)}
-}
+    /* ---------- RESPONSE BOX ---------- */
+    .response-box {
+      background: #0b0b12;
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-top: 1.2rem;
+      border: 1px solid #3f3f46;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: #d4d4d8;
+    }
+    .response-box .label {
+      color: #71717a;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+    .response-box .ok-true {
+      color: #4ade80;
+    }
+    .response-box .ok-false {
+      color: #f87171;
+    }
 
-/* ── Corner decorations ── */
-.corner{position:fixed;width:80px;height:80px;z-index:5;opacity:.3}
-.corner-tl{top:20px;left:20px;border-top:1px solid var(--accent);border-left:1px solid var(--accent)}
-.corner-tr{top:20px;right:20px;border-top:1px solid var(--accent);border-right:1px solid var(--accent)}
-.corner-bl{bottom:20px;left:20px;border-bottom:1px solid var(--accent);border-left:1px solid var(--accent)}
-.corner-br{bottom:20px;right:20px;border-bottom:1px solid var(--accent);border-right:1px solid var(--accent)}
+    /* ---------- FOOTER ---------- */
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #52525b;
+      font-size: 0.9rem;
+      border-top: 1px solid #27272a;
+      padding-top: 2rem;
+    }
 
-/* ── Floating particles ── */
-.particles{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
-.particle{
-  position:absolute;
-  width:2px;height:2px;
-  background:var(--accent);
-  border-radius:50%;
-  opacity:0;
-  animation:float-up linear infinite;
-}
-.particle:nth-child(1){left:10%;animation-duration:12s;animation-delay:0s}
-.particle:nth-child(2){left:25%;animation-duration:9s;animation-delay:2s;width:1px;height:1px}
-.particle:nth-child(3){left:40%;animation-duration:15s;animation-delay:1s}
-.particle:nth-child(4){left:55%;animation-duration:11s;animation-delay:3s;background:var(--fg);width:1px;height:1px}
-.particle:nth-child(5){left:70%;animation-duration:13s;animation-delay:0.5s}
-.particle:nth-child(6){left:85%;animation-duration:10s;animation-delay:4s;width:1px;height:1px}
-.particle:nth-child(7){left:18%;animation-duration:14s;animation-delay:6s;background:var(--red)}
-.particle:nth-child(8){left:62%;animation-duration:8s;animation-delay:2.5s;background:var(--green);width:1px;height:1px}
-@keyframes float-up{
-  0%{bottom:-10px;opacity:0}
-  10%{opacity:.6}
-  90%{opacity:.3}
-  100%{bottom:100vh;opacity:0}
-}
-
-/* ── Main container ── */
-.container{
-  position:relative;z-index:2;
-  width:min(680px,92vw);
-  text-align:center;
-}
-
-/* ── Status bar top ── */
-.status-bar{
-  display:flex;align-items:center;gap:.6rem;
-  padding:.5rem 1rem;
-  background:var(--dim);
-  border:1px solid var(--border);
-  border-bottom:none;
-  font-size:.65rem;
-  letter-spacing:.15em;
-  color:#3a4d70;
-  justify-content:space-between;
-}
-.status-bar .left{display:flex;align-items:center;gap:.5rem}
-.dot-red{width:7px;height:7px;border-radius:50%;background:var(--red)}
-.dot-yellow{width:7px;height:7px;border-radius:50%;background:var(--accent)}
-.dot-green{width:7px;height:7px;border-radius:50%;background:var(--green)}
-.status-bar .right{color:#2a3855}
-
-/* ── Terminal box ── */
-.terminal{
-  background:rgba(4,6,13,.92);
-  border:1px solid rgba(240,192,96,.15);
-  padding:3rem 3rem 2.5rem;
-  position:relative;
-  backdrop-filter:blur(4px);
-  box-shadow:
-    0 0 0 1px rgba(240,192,96,.05),
-    0 40px 80px rgba(0,0,0,.6),
-    inset 0 1px 0 rgba(240,192,96,.06);
-}
-
-/* blinking cursor on top */
-.terminal::before{
-  content:'';
-  position:absolute;
-  top:-1px;left:0;right:0;
-  height:2px;
-  background:linear-gradient(90deg,transparent,var(--accent),transparent);
-  animation:scan-line 3s ease-in-out infinite;
-}
-@keyframes scan-line{
-  0%{opacity:0;left:0;right:100%}
-  50%{opacity:1}
-  100%{opacity:0;left:100%;right:0}
-}
-
-/* ── Icon ── */
-.icon-wrap{
-  margin-bottom:2rem;
-  position:relative;
-  display:inline-block;
-}
-.icon-ring{
-  width:90px;height:90px;
-  border-radius:50%;
-  border:1px solid rgba(240,192,96,.2);
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto;
-  position:relative;
-  animation:ring-spin 8s linear infinite;
-}
-.icon-ring::before{
-  content:'';
-  position:absolute;inset:-6px;
-  border-radius:50%;
-  border:1px dashed rgba(240,192,96,.1);
-  animation:ring-spin 12s linear infinite reverse;
-}
-@keyframes ring-spin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
-.icon-inner{
-  font-size:2.2rem;
-  animation:ring-spin 8s linear infinite reverse; /* counter-rotate so icon stays upright */
-  filter:drop-shadow(0 0 12px rgba(240,192,96,.4));
-}
-
-/* ── Badge ── */
-.badge{
-  display:inline-flex;align-items:center;gap:.4rem;
-  font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;
-  color:var(--accent);
-  border:1px solid rgba(240,192,96,.25);
-  padding:.3rem .8rem;
-  margin-bottom:1.5rem;
-  background:rgba(240,192,96,.05);
-}
-.badge-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:blink 1s step-end infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-
-/* ── Headline ── */
-.headline{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(3rem,10vw,5.5rem);
-  letter-spacing:.05em;
-  line-height:1;
-  margin-bottom:.6rem;
-  color:#fff;
-  text-shadow:0 0 40px rgba(240,192,96,.2);
-}
-.headline span{color:var(--accent)}
-
-.sub-headline{
-  font-size:.7rem;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:#3a5080;
-  margin-bottom:2rem;
-}
-
-/* ── Progress ── */
-.progress-wrap{margin-bottom:2rem}
-.progress-labels{
-  display:flex;justify-content:space-between;
-  font-size:.6rem;letter-spacing:.1em;color:#2a3855;
-  margin-bottom:.4rem;
-}
-.progress-track{
-  height:3px;
-  background:var(--dim);
-  border:1px solid var(--border);
-  position:relative;
-  overflow:hidden;
-}
-.progress-fill{
-  height:100%;
-  background:linear-gradient(90deg,var(--accent),#ffaa00);
-  animation:progress-animate 4s ease-in-out infinite;
-  box-shadow:0 0 10px rgba(240,192,96,.6);
-}
-@keyframes progress-animate{
-  0%{width:15%;opacity:.8}
-  50%{width:75%;opacity:1}
-  100%{width:15%;opacity:.8}
-}
-
-/* ── Log lines ── */
-.log{
-  text-align:left;
-  background:rgba(0,0,0,.4);
-  border:1px solid var(--border);
-  padding:1rem 1.2rem;
-  margin-bottom:2rem;
-  max-height:130px;
-  overflow:hidden;
-  position:relative;
-}
-.log::after{
-  content:'';
-  position:absolute;bottom:0;left:0;right:0;height:40px;
-  background:linear-gradient(transparent,rgba(4,6,13,.9));
-}
-.log-line{
-  font-size:.68rem;
-  line-height:1.9;
-  color:#2a3855;
-  opacity:0;
-  animation:log-in .3s ease forwards;
-}
-.log-line.active{color:var(--fg);opacity:1}
-.log-line.done{color:#2a5040}
-.log-line.warn{color:var(--accent)}
-.log-line.err{color:var(--red)}
-.log-line .prompt{color:#1a3050;margin-right:.6rem}
-.log-line .ok{color:var(--green)}
-.log-line .fail{color:var(--red)}
-@keyframes log-in{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:translateX(0)}}
-
-/* ── ETA ── */
-.eta-row{
-  display:flex;align-items:center;justify-content:center;gap:2rem;
-  padding:1rem 1.2rem;
-  background:var(--dim);
-  border:1px solid var(--border);
-  margin-bottom:2rem;
-}
-.eta-item{text-align:center}
-.eta-val{
-  font-family:'Bebas Neue',sans-serif;
-  font-size:2rem;letter-spacing:.1em;
-  color:var(--accent);
-  display:block;
-  line-height:1;
-  text-shadow:0 0 20px rgba(240,192,96,.3);
-}
-.eta-label{font-size:.55rem;letter-spacing:.2em;color:#2a3855;text-transform:uppercase;margin-top:.3rem;display:block}
-.eta-sep{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#1a2035;animation:blink 1s step-end infinite}
-
-/* ── Footer ── */
-.footer-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding-top:1.5rem;
-  border-top:1px solid var(--border);
-  font-size:.6rem;letter-spacing:.1em;color:#1a2840;
-}
-.back-link{
-  color:var(--accent);text-decoration:none;
-  opacity:.7;
-  transition:opacity .2s;
-}
-.back-link:hover{opacity:1}
-.tg-link{
-  color:var(--fg);text-decoration:none;
-  opacity:.4;transition:opacity .2s;
-}
-.tg-link:hover{opacity:.8}
-
-/* ── Notification banner ── */
-.notif{
-  position:fixed;bottom:24px;right:24px;
-  background:var(--dim);
-  border:1px solid rgba(240,192,96,.2);
-  border-left:3px solid var(--accent);
-  padding:.8rem 1.2rem;
-  font-size:.68rem;
-  color:var(--fg);
-  z-index:20;
-  max-width:260px;
-  transform:translateX(120%);
-  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
-  line-height:1.6;
-}
-.notif.show{transform:translateX(0)}
-.notif .notif-title{color:var(--accent);letter-spacing:.1em;font-size:.65rem;margin-bottom:.2rem}
-
-/* responsive */
-@media(max-width:480px){
-  .terminal{padding:2rem 1.4rem 1.8rem}
-  .eta-row{gap:1rem}
-}
-</style>
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 640px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .demo-row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<div class="orb"></div>
-<div class="particles">
-  <div class="particle"></div><div class="particle"></div>
-  <div class="particle"></div><div class="particle"></div>
-  <div class="particle"></div><div class="particle"></div>
-  <div class="particle"></div><div class="particle"></div>
-</div>
-<div class="corner corner-tl"></div>
-<div class="corner corner-tr"></div>
-<div class="corner corner-bl"></div>
-<div class="corner corner-br"></div>
-
 <div class="container">
 
-  <div class="status-bar">
-    <div class="left">
-      <div class="dot-red"></div>
-      <div class="dot-yellow"></div>
-      <div class="dot-green"></div>
-      <span>arkan-api / docs</span>
-    </div>
-    <span class="right" id="clock">--:--:--</span>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>📖 API Documentation</h1>
+    <div class="badge">⚡ Status: <span>Online</span></div>
   </div>
 
-  <div class="terminal">
-
-    <div class="icon-wrap">
-      <div class="icon-ring">
-        <span class="icon-inner">⚙️</span>
-      </div>
-    </div>
-
-    <div class="badge">
-      <span class="badge-dot"></span>
-      MAINTENANCE MODE
-    </div>
-
-    <h1 class="headline">UNDER<br><span>MAINTENANCE</span></h1>
-    <p class="sub-headline">// arkan api docs — sedang dalam perbaikan</p>
-
-    <div class="progress-wrap">
-      <div class="progress-labels">
-        <span>PROGRESS</span>
-        <span id="pct">—</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="fill"></div>
-      </div>
-    </div>
-
-    <div class="log" id="log">
-      <div class="log-line done"><span class="prompt">$</span>init system...<span class="ok"> ✓</span></div>
-      <div class="log-line done warn"><span class="prompt">$</span>docs service — <span class="fail">OFFLINE</span></div>
-      <div class="log-line done"><span class="prompt">$</span>deploying new endpoints...</div>
-      <div class="log-line done"><span class="prompt">$</span>migrating api schema...</div>
-      <div class="log-line" id="log-active"><span class="prompt">$</span>rebuilding documentation...<span class="ok" id="log-cursor"> ▌</span></div>
-    </div>
-
-    <div class="eta-row">
-      <div class="eta-item">
-        <span class="eta-val" id="h">00</span>
-        <span class="eta-label">JAM</span>
-      </div>
-      <span class="eta-sep">:</span>
-      <div class="eta-item">
-        <span class="eta-val" id="m">00</span>
-        <span class="eta-label">MENIT</span>
-      </div>
-      <span class="eta-sep">:</span>
-      <div class="eta-item">
-        <span class="eta-val" id="s">00</span>
-        <span class="eta-label">DETIK</span>
-      </div>
-    </div>
-
-    <div class="footer-row">
-      <a href="/" class="back-link">← Kembali ke Portfolio</a>
-      <span>ARKAN API v1.0</span>
-      <a href="https://t.me/Arkanhahaha" target="_blank" class="tg-link">@Arkanhahaha</a>
-    </div>
-
+  <!-- ENDPOINT INFO -->
+  <div class="card">
+    <h2><span class="emoji">🔗</span> Endpoint</h2>
+    <p><strong>POST</strong> <code id="endpointUrl">https://your-worker.workers.dev/chat</code></p>
+    <p>Base URL: <span id="baseUrlDisplay">https://your-worker.workers.dev</span></p>
   </div>
-</div>
 
-<!-- Notification popup -->
-<div class="notif" id="notif">
-  <div class="notif-title">📢 INFO</div>
-  Docs sedang di-rebuild. API lainnya tetap berjalan normal.
+  <!-- AUTH & HEADERS -->
+  <div class="card">
+    <h2><span class="emoji">🔑</span> Authentication</h2>
+    <p>Kirim <code>x-api-key</code> header dengan API key kamu.</p>
+    <pre><code>x-api-key: ak-xxxxxxxxxxxxxxxx</code></pre>
+    <p>Dapatkan API key di <a href="/dashboard">Dashboard</a> atau via <code>/generate-key</code>.</p>
+  </div>
+
+  <!-- REQUEST / RESPONSE FORMAT -->
+  <div class="card">
+    <h2><span class="emoji">📦</span> Request &amp; Response</h2>
+    <p><strong>Body (JSON):</strong></p>
+    <pre><code>{
+  "prompt": "Tulis puisi tentang coding",
+  "model": "@cf/meta/llama-3.2-3b-instruct"  // opsional
+}</code></pre>
+    <p><strong>Response Sukses (ok: true):</strong></p>
+    <pre><code>{
+  "ok": true,
+  "result": { "response": "..." },
+  "usage": {
+    "remaining": 195,
+    "limit": 200,
+    "reset_at": "2026-06-21T12:00:00.000Z"
+  }
+}</code></pre>
+    <p><strong>Response Error (ok: false):</strong></p>
+    <pre><code>{
+  "ok": false,
+  "error": "Rate limit exceeded. Try again later.",
+  "reset_at": "2026-06-21T12:00:00.000Z",
+  "limit": 200
+}</code></pre>
+  </div>
+
+  <!-- LIVE DEMO -->
+  <div class="card">
+    <h2><span class="emoji">🧪</span> Live Demo</h2>
+    <p>Coba kirim prompt langsung ke API di bawah ini.</p>
+
+    <div class="demo-group">
+      <label for="apiKeyInput">🔑 API Key</label>
+      <input type="text" id="apiKeyInput" placeholder="Masukkan API key kamu" value="ak-xxxxxxxxxxxxxxxx" />
+    </div>
+
+    <div class="demo-row">
+      <div class="demo-group">
+        <label for="promptInput">💬 Prompt</label>
+        <textarea id="promptInput" placeholder="Tanyakan apa saja...">Ceritakan tentang Cloudflare Workers AI dalam 3 kalimat!</textarea>
+      </div>
+      <div class="demo-group" style="flex: 0 0 200px;">
+        <label for="modelSelect">🤖 Model</label>
+        <select id="modelSelect">
+          <option value="@cf/meta/llama-3.2-3b-instruct" selected>Llama 3.2 3B</option>
+          <option value="@cf/qwen/qwen1.5-0.5b-chat">Qwen 0.5B</option>
+          <option value="@cf/meta/llama-3.1-8b-instruct">Llama 3.1 8B</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">
+      <button class="btn" id="sendBtn">🚀 Kirim</button>
+      <button class="btn btn-secondary" id="clearBtn">🗑️ Clear</button>
+    </div>
+
+    <!-- Response area -->
+    <div class="response-box" id="responseBox">
+      <span class="label">📨 Response akan muncul di sini</span>
+    </div>
+  </div>
+
+  <!-- CURL EXAMPLE -->
+  <div class="card">
+    <h2><span class="emoji">🖥️</span> Contoh cURL</h2>
+    <pre><code id="curlExample">curl -X POST https://your-worker.workers.dev/chat \
+  -H "x-api-key: ak-xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Halo, siapa kamu?"}'</code></pre>
+    <button class="btn btn-secondary" id="copyCurlBtn">📋 Salin cURL</button>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    &copy; 2026 AI Platform — Dibangun dengan ❤️ di atas Cloudflare Workers
+  </div>
 </div>
 
 <script>
-// ── Clock ──
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  const s = String(now.getSeconds()).padStart(2,'0');
-  document.getElementById('clock').textContent = h+':'+m+':'+s;
-}
-setInterval(updateClock, 1000);
-updateClock();
+  (function() {
+    // ---------- Ambil base URL dari window.location ----------
+    const baseUrl = window.location.origin; // ambil domain saat ini
+    document.getElementById('endpointUrl').textContent = baseUrl + '/chat';
+    document.getElementById('baseUrlDisplay').textContent = baseUrl;
+    // Update cURL example juga
+    document.getElementById('curlExample').textContent =
+      `curl -X POST ${baseUrl}/chat \\\n  -H "x-api-key: ak-xxxxxxxxxxxxxxxx" \\\n  -H "Content-Type: application/json" \\\n  -d '{"prompt": "Halo, siapa kamu?"}'`;
 
-// ── Countdown timer (e.g. 2 hours from now) ──
-// Change targetTime to your actual ETA
-const targetTime = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
+    // ---------- DOM refs ----------
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const promptInput = document.getElementById('promptInput');
+    const modelSelect = document.getElementById('modelSelect');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const responseBox = document.getElementById('responseBox');
+    const copyCurlBtn = document.getElementById('copyCurlBtn');
 
-function updateCountdown() {
-  const now = new Date();
-  const diff = Math.max(0, targetTime - now);
-  const hrs  = Math.floor(diff / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
-  const secs = Math.floor((diff % 60000) / 1000);
-  document.getElementById('h').textContent = String(hrs).padStart(2,'0');
-  document.getElementById('m').textContent = String(mins).padStart(2,'0');
-  document.getElementById('s').textContent = String(secs).padStart(2,'0');
-}
-setInterval(updateCountdown, 1000);
-updateCountdown();
+    // ---------- Kirim request ----------
+    async function sendRequest() {
+      const apiKey = apiKeyInput.value.trim();
+      const prompt = promptInput.value.trim();
+      const model = modelSelect.value;
 
-// ── Progress percent (from fill bar animation) ──
-const fill = document.getElementById('fill');
-const pct  = document.getElementById('pct');
-function readProgress() {
-  const w = fill.getBoundingClientRect().width;
-  const total = fill.parentElement.getBoundingClientRect().width;
-  const v = Math.round((w / total) * 100);
-  pct.textContent = v + '%';
-}
-setInterval(readProgress, 200);
+      if (!apiKey) {
+        responseBox.innerHTML = `<span class="label">❌ Error</span>\n${JSON.stringify({ ok: false, error: 'API key wajib diisi' }, null, 2)}`;
+        return;
+      }
+      if (!prompt) {
+        responseBox.innerHTML = `<span class="label">❌ Error</span>\n${JSON.stringify({ ok: false, error: 'Prompt tidak boleh kosong' }, null, 2)}`;
+        return;
+      }
 
-// ── Cursor blink in log ──
-const cursor = document.getElementById('log-cursor');
-setInterval(() => {
-  cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
-}, 500);
+      // Tampilkan loading
+      responseBox.innerHTML = `<span class="label">⏳ Mengirim...</span>`;
 
-// ── Notification popup ──
-setTimeout(() => {
-  document.getElementById('notif').classList.add('show');
-  setTimeout(() => document.getElementById('notif').classList.remove('show'), 5000);
-}, 2500);
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey
+          },
+          body: JSON.stringify({ prompt, model })
+        });
 
-// ── Log cycling ──
-const logLines = [
-  'rebuilding documentation...',
-  'compiling endpoint schemas...',
-  'optimizing response types...',
-  'testing tiktok handler...',
-  'testing youtube handler...',
-  'updating try-it playground...',
-  'finalizing docs layout...',
-];
-let logIdx = 0;
-const logEl = document.getElementById('log-active');
-setInterval(() => {
-  logIdx = (logIdx + 1) % logLines.length;
-  logEl.innerHTML = `<span class="prompt">$</span>${logLines[logIdx]}<span class="ok" id="log-cursor"> ▌</span>`;
-}, 3000);
+        const data = await response.json();
+        const pretty = JSON.stringify(data, null, 2);
+        // Warna berdasarkan ok
+        const okStatus = data.ok === true ? 'ok-true' : 'ok-false';
+        responseBox.innerHTML = `<span class="label">📨 Response (${response.status})</span>\n<span class="${okStatus}">${pretty}</span>`;
+      } catch (err) {
+        responseBox.innerHTML = `<span class="label">❌ Network Error</span>\n${err.message}`;
+      }
+    }
+
+    // ---------- Event listeners ----------
+    sendBtn.addEventListener('click', sendRequest);
+
+    // Enter di prompt juga kirim (Ctrl+Enter)
+    promptInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        sendRequest();
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      promptInput.value = '';
+      responseBox.innerHTML = `<span class="label">📨 Response akan muncul di sini</span>`;
+    });
+
+    // Copy cURL
+    copyCurlBtn.addEventListener('click', () => {
+      const curlText = document.getElementById('curlExample').textContent;
+      navigator.clipboard.writeText(curlText).then(() => {
+        const original = copyCurlBtn.textContent;
+        copyCurlBtn.textContent = '✅ Tersalin!';
+        setTimeout(() => { copyCurlBtn.textContent = original; }, 2000);
+      }).catch(() => alert('Gagal menyalin, silakan salin manual.'));
+    });
+
+    // ---------- Set API key dari URL param (opsional) ----------
+    const urlParams = new URLSearchParams(window.location.search);
+    const keyParam = urlParams.get('api_key');
+    if (keyParam) {
+      apiKeyInput.value = keyParam;
+    }
+
+    console.log('📖 Docs loaded. Base URL:', baseUrl);
+  })();
 </script>
+
 </body>
 </html>
