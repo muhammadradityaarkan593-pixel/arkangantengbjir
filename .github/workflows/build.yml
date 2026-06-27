@@ -100,20 +100,22 @@ jobs:
           if [ -f "pubspec.yaml" ]; then
             flutter analyze > analyze_report.txt 2>&1 || true
             cat analyze_report.txt
+            
+            # 🔥 Jika terdeteksi 'error •' (fatal), rilis exit 1 agar bot langsung membaca error logs kodingan user bray
             if grep -q "error •" analyze_report.txt; then
               rm -f analyze_report.txt
               exit 1
             fi
             rm -f analyze_report.txt
           else
-            echo "❌ pubspec.yaml tidak ditemukan."
+            echo "❌ pubspec.yaml tidak ditemukan bray!"
             exit 1
           fi
 
-      - name: Stop If Only Analyze
+      - name: Stop If Only Analyze Success
         if: ${{ github.event.inputs.only_analyze == 'true' }}
         run: |
-          echo "✅ Pemindaian selesai tanpa eror fatal bray!"
+          echo "✅ Pemindaian Flutter Analyze selesai bersih tanpa eror fatal bray!"
           exit 0
 
       - name: Get dependencies
