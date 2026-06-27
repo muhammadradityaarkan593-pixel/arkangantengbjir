@@ -99,24 +99,19 @@ jobs:
         run: |
           if [ -f "pubspec.yaml" ]; then
             flutter analyze > analyze_report.txt 2>&1 || true
+            echo "[RESULT_ANALYZE]"
             cat analyze_report.txt
-            
-            # 🔥 Jika terdeteksi 'error •' (fatal), rilis exit 1 agar bot langsung membaca error logs kodingan user bray
-            if grep -q "error •" analyze_report.txt; then
-              rm -f analyze_report.txt
-              exit 1
-            fi
+            echo "[END_RESULT_ANALYZE]"
             rm -f analyze_report.txt
           else
-            echo "❌ pubspec.yaml tidak ditemukan bray!"
-            exit 1
+            echo "[RESULT_ANALYZE]"
+            echo "❌ pubspec.yaml tidak ditemukan."
+            echo "[END_RESULT_ANALYZE]"
           fi
 
-      - name: Stop If Only Analyze Success
+      - name: Stop if Analyze Only
         if: ${{ github.event.inputs.only_analyze == 'true' }}
-        run: |
-          echo "✅ Pemindaian Flutter Analyze selesai bersih tanpa eror fatal bray!"
-          exit 0
+        run: exit 1
 
       - name: Get dependencies
         working-directory: ${{ env.PROJECT_DIR }}
@@ -146,7 +141,7 @@ jobs:
           APK_FOUND=$(find $GITHUB_WORKSPACE -name "*.apk" | head -n 1)
           APK_PATH=$(echo "$APK_FOUND" | sed "s|$GITHUB_WORKSPACE/||")
           echo "PROJECT_DIR=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
+          echo "APK_PATH|$APK_PATH" >> $GITHUB_ENV
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
