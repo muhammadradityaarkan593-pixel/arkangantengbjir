@@ -99,19 +99,22 @@ jobs:
         run: |
           if [ -f "pubspec.yaml" ]; then
             flutter analyze > analyze_report.txt 2>&1 || true
-            echo "[RESULT_ANALYZE]"
             cat analyze_report.txt
-            echo "[END_RESULT_ANALYZE]"
+            if grep -q "error •" analyze_report.txt; then
+              rm -f analyze_report.txt
+              exit 1
+            fi
             rm -f analyze_report.txt
           else
-            echo "[RESULT_ANALYZE]"
             echo "❌ pubspec.yaml tidak ditemukan."
-            echo "[END_RESULT_ANALYZE]"
+            exit 1
           fi
 
-      - name: Stop if Analyze Only
+      - name: Stop If Only Analyze
         if: ${{ github.event.inputs.only_analyze == 'true' }}
-        run: exit 1
+        run: |
+          echo "✅ Pemindaian selesai tanpa eror fatal bray!"
+          exit 0
 
       - name: Get dependencies
         working-directory: ${{ env.PROJECT_DIR }}
