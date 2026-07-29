@@ -1,3 +1,6 @@
-name = "kanzz-panel-worker"
-main = "index.js"
-compatibility_date = "2026-04-03"
+name = "orderkuota-proxy-worker"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+API_KEY = "ARKANGANTENG"
