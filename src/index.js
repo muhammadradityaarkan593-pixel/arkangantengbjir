@@ -22,14 +22,14 @@ const OK_CONSTANTS = {
 
 app.use("*", async (c, next) => {
   const apiKey = c.req.header("x-api-key") || c.req.query("api_key");
-  const validApiKey = c.env.API_KEY || "SECRET_API_KEY_123";
+  const validApiKey = c.env.API_KEY || "ARKANGANTENG";
 
   if (!apiKey || apiKey !== validApiKey) {
     return c.json(
       {
         author: "@Arkanhahaha",
         success: false,
-        message: "Unauthorized.",
+        message: "Unauthorized: Invalid or missing API Key.",
       },
       401
     );
@@ -170,6 +170,7 @@ app.post("/api/qris-ajaib", async (c) => {
       "requests[qris_ajaib][amount]": amount.toString(),
     });
 
+    // Endpoint resmi QRIS Ajaib
     const res = await fetch("https://app.orderkuota.com/api/v2/get", {
       method: "POST",
       headers: OK_HEADERS,
@@ -177,7 +178,7 @@ app.post("/api/qris-ajaib", async (c) => {
     });
 
     const data = await res.json();
-    return c.json({ author: "WJayadana", ...data });
+    return c.json({ author: "@Arkanhahaha", ...data });
   } catch (err) {
     return c.json({
       author: "@Arkanhahaha",
