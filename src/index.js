@@ -27,9 +27,9 @@ app.use("*", async (c, next) => {
   if (!apiKey || apiKey !== validApiKey) {
     return c.json(
       {
-        author: "WJayadana",
+        author: "@Arkanhahaha",
         success: false,
-        message: "Unauthorized: Invalid or missing API Key.",
+        message: "Unauthorized.",
       },
       401
     );
@@ -43,7 +43,7 @@ app.post("/api/otp", async (c) => {
 
     if (!username || !password) {
       return c.json({
-        author: "WJayadana",
+        author: "@Arkanhahaha",
         success: false,
         message: "Username and password are required.",
       });
@@ -64,28 +64,28 @@ app.post("/api/otp", async (c) => {
     const data = await res.json();
 
     if (data?.success === false) {
-      return c.json({ author: "WJayadana", ...data });
+      return c.json({ author: "@Arkanhahaha", ...data });
     }
 
     const email = data?.results?.otp_value;
 
     if (!email) {
       return c.json({
-        author: "WJayadana",
+        author: "@Arkanhahaha",
         success: false,
         message: "Failed to get OTP email from response",
       });
     }
 
     return c.json({
-      author: "WJayadana",
+      author: "@Arkanhahaha",
       status: "success",
       email: email,
       message: `OTP has been sent to ${email}. Please check your email.`,
     });
   } catch (err) {
     return c.json({
-      author: "WJayadana",
+      author: "@Arkanhahaha",
       success: false,
       message: `Unexpected error: ${err.message}`,
     });
@@ -98,7 +98,7 @@ app.post("/api/token", async (c) => {
 
     if (!username || !otp) {
       return c.json({
-        author: "WJayadana",
+        author: "@Arkanhahaha",
         success: false,
         message: "Username and OTP are required.",
       });
@@ -119,19 +119,19 @@ app.post("/api/token", async (c) => {
     const data = await res.json();
 
     if (data?.success === false) {
-      return c.json({ author: "WJayadana", ...data });
+      return c.json({ author: "@Arkanhahaha", ...data });
     }
 
     if (!data?.results?.token) {
       return c.json({
-        author: "WJayadana",
+        author: "@Arkanhahaha",
         success: false,
         message: "Token not found in response.",
       });
     }
 
     return c.json({
-      author: "WJayadana",
+      author: "@Arkanhahaha",
       status: "success",
       token: data.results.token,
       id: data.results.id,
@@ -142,7 +142,7 @@ app.post("/api/token", async (c) => {
     });
   } catch (err) {
     return c.json({
-      author: "WJayadana",
+      author: "@Arkanhahaha",
       success: false,
       message: `Unexpected error: ${err.message}`,
     });
@@ -155,7 +155,7 @@ app.post("/api/qris-ajaib", async (c) => {
 
     if (!username || !token) {
       return c.json({
-        author: "WJayadana",
+        author: "@Arkanhahaha",
         success: false,
         message: "Username and token are required.",
       });
@@ -180,7 +180,7 @@ app.post("/api/qris-ajaib", async (c) => {
     return c.json({ author: "WJayadana", ...data });
   } catch (err) {
     return c.json({
-      author: "WJayadana",
+      author: "@Arkanhahaha",
       success: false,
       message: `Unexpected error: ${err.message}`,
     });
@@ -193,7 +193,7 @@ app.post("/api/qris-history", async (c) => {
 
     if (!username || !token) {
       return c.json({
-        author: "WJayadana",
+        author: "@Arkanhahaha",
         success: false,
         message: "Username and token are required.",
       });
@@ -231,10 +231,10 @@ app.post("/api/qris-history", async (c) => {
     );
 
     const data = await res.json();
-    return c.json({ author: "WJayadana", ...data });
+    return c.json({ author: "@Arkanhahaha", ...data });
   } catch (err) {
     return c.json({
-      author: "WJayadana",
+      author: "@Arkanhahaha",
       success: false,
       message: `Unexpected error: ${err.message}`,
     });
