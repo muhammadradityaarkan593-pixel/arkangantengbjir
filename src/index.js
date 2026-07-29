@@ -1,238 +1,244 @@
-// ============================================================
-// INDEX.JS - Main Entry (Semua Endpoint)
-// ============================================================
+ import { Hono } from "hono";
+import qs from "qs";
 
-import { handleDashboard } from './dashboard';
-import { handleDocs } from './docs';
-import {
-  validateApiKey,
-  checkRateLimit,
-  generateApiKey,
-  saveApiKey,
-  deleteApiKey,
-  listApiKeys,
-  updateLastUsed
-} from './auth';
+const app = new Hono();
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const path = url.pathname;
-    const method = request.method;
-
-    // CORS Preflight
-    if (method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders() });
-    }
-
-    // ============ ROUTES ============
-    
-    // Dashboard
-    if (path === '/' || path === '/dashboard') {
-      return handleDashboard(env);
-    }
-
-    // Dokumentasi
-    if (path === '/docs') {
-      return handleDocs();
-    }
-
-    // Generate API Key
-    if (path === '/generate-key' && method === 'POST') {
-      return await handleGenerateKey(request, env);
-    }
-
-    // List API Keys
-    if (path === '/list-keys' && method === 'GET') {
-      return await handleListKeys(request, env);
-    }
-
-    // Delete API Key
-    if (path === '/delete-key' && method === 'POST') {
-      return await handleDeleteKey(request, env);
-    }
-
-    // Cek Quota
-    if (path === '/quota' && method === 'GET') {
-      return await handleQuota(request, env);
-    }
-
-    // Chat AI
-    if (path === '/chat' && method === 'POST') {
-      return await handleChat(request, env);
-    }
-
-    // 404
-    return jsonResponse({ ok: false, error: 'Endpoint tidak ditemukan' }, 404);
-  }
+const OK_HEADERS = {
+  "User-Agent": "okhttp/4.12.0",
+  Host: "app.orderkuota.com",
+  "Content-Type": "application/x-www-form-urlencoded",
 };
 
-// ============================================================
-// HELPER FUNCTIONS
-// ============================================================
+const OK_CONSTANTS = {
+  app_reg_id:
+    "e5aCENGrQOWvhQWYnv-uNc:APA91bFj3O_mv5Nf_2SM4Duz4Z8Ug3nBNaHlgodlY92CBuNIA9xmc0Dahev5xxqssPmnTdcie4mlhiG9ZAE1iCe1QbyhxcUyGXlenJxiUaXdfm1rklOEo9k",
+  phone_uuid: "e5aCENGrQOWvhQWYnv-uNc",
+  phone_model: "sdk_gphone64_x86_64",
+  phone_android_version: "16",
+  app_version_code: "250811",
+  app_version_name: "25.08.11",
+  ui_mode: "light",
+};
 
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, x-api-key, x-admin-secret'
-  };
-}
+app.use("*", async (c, next) => {
+  const apiKey = c.req.header("x-api-key") || c.req.query("api_key");
+  const validApiKey = c.env.API_KEY || "SECRET_API_KEY_123";
 
-function jsonResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      ...corsHeaders()
+  if (!apiKey || apiKey !== validApiKey) {
+    return c.json(
+      {
+        author: "WJayadana",
+        success: false,
+        message: "Unauthorized: Invalid or missing API Key.",
+      },
+      401
+    );
+  }
+  await next();
+});
+
+app.post("/api/otp", async (c) => {
+  try {
+    const { username, password } = await c.req.json();
+
+    if (!username || !password) {
+      return c.json({
+        author: "WJayadana",
+        success: false,
+        message: "Username and password are required.",
+      });
     }
-  });
-}
 
-// ============================================================
-// HANDLERS
-// ============================================================
-
-// GENERATE KEY
-async function handleGenerateKey(request, env) {
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'rahasiabanget') {
-    return jsonResponse({ ok: false, error: 'Unauthorized' }, 403);
-  }
-
-  let label = '';
-  try {
-    const body = await request.json();
-    label = body.label || '';
-  } catch (_) {}
-
-  const newKey = generateApiKey();
-  await saveApiKey(newKey, env, label);
-
-  return jsonResponse({
-    ok: true,
-    api_key: newKey,
-    message: 'Simpan API key ini! Tidak akan ditampilkan lagi.'
-  });
-}
-
-// LIST KEYS
-async function handleListKeys(request, env) {
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'rahasiabanget') {
-    return jsonResponse({ ok: false, error: 'Unauthorized' }, 403);
-  }
-
-  const keys = await listApiKeys(env);
-  return jsonResponse({ ok: true, keys });
-}
-
-// DELETE KEY
-async function handleDeleteKey(request, env) {
-  const adminSecret = request.headers.get('x-admin-secret');
-  if (adminSecret !== 'rahasiabanget') {
-    return jsonResponse({ ok: false, error: 'Unauthorized' }, 403);
-  }
-
-  let apiKey;
-  try {
-    const body = await request.json();
-    apiKey = body.api_key;
-  } catch (_) {
-    return jsonResponse({ ok: false, error: 'Body harus JSON dengan field "api_key"' }, 400);
-  }
-
-  if (!apiKey) {
-    return jsonResponse({ ok: false, error: 'Field "api_key" required' }, 400);
-  }
-
-  await deleteApiKey(apiKey, env);
-  return jsonResponse({ ok: true, message: 'API key berhasil dihapus' });
-}
-
-// QUOTA
-async function handleQuota(request, env) {
-  const apiKey = request.headers.get('x-api-key');
-  if (!apiKey) {
-    return jsonResponse({ ok: false, error: 'API key required' }, 401);
-  }
-
-  const valid = await validateApiKey(apiKey, env);
-  if (!valid) {
-    return jsonResponse({ ok: false, error: 'Invalid API key' }, 403);
-  }
-
-  const rateLimit = await checkRateLimit(apiKey, env);
-  return jsonResponse({
-    ok: true,
-    quota: {
-      remaining: rateLimit.remaining,
-      limit: rateLimit.limit,
-      reset_at: rateLimit.resetAt
-    }
-  });
-}
-
-// CHAT
-async function handleChat(request, env) {
-  // 1. Validasi API Key
-  const apiKey = request.headers.get('x-api-key');
-  if (!apiKey) {
-    return jsonResponse({ ok: false, error: 'API key required' }, 401);
-  }
-
-  const valid = await validateApiKey(apiKey, env);
-  if (!valid) {
-    return jsonResponse({ ok: false, error: 'Invalid API key' }, 403);
-  }
-
-  // 2. Rate limit
-  const rateLimit = await checkRateLimit(apiKey, env);
-  if (!rateLimit.allowed) {
-    return jsonResponse({
-      ok: false,
-      error: 'Rate limit exceeded. Coba lagi nanti.',
-      reset_at: rateLimit.resetAt,
-      limit: rateLimit.limit
-    }, 429);
-  }
-
-  // 3. Parse body
-  let prompt, model;
-  try {
-    const body = await request.json();
-    prompt = body.prompt;
-    model = body.model || '@cf/meta/llama-3.2-3b-instruct';
-  } catch (_) {
-    return jsonResponse({ ok: false, error: 'Body harus JSON dengan field "prompt"' }, 400);
-  }
-
-  if (!prompt) {
-    return jsonResponse({ ok: false, error: 'Field "prompt" required' }, 400);
-  }
-
-  // 4. Panggil Workers AI
-  try {
-    const response = await env.AI.run(model, {
-      messages: [{ role: 'user', content: prompt }]
+    const payload = qs.stringify({
+      username,
+      password,
+      ...OK_CONSTANTS,
     });
 
-    await updateLastUsed(apiKey, env);
+    const res = await fetch("https://app.orderkuota.com/api/v2/login", {
+      method: "POST",
+      headers: OK_HEADERS,
+      body: payload,
+    });
 
-    return jsonResponse({
-      ok: true,
-      result: response,
-      usage: {
-        remaining: rateLimit.remaining,
-        limit: rateLimit.limit,
-        reset_at: rateLimit.resetAt
+    const data = await res.json();
+
+    if (data?.success === false) {
+      return c.json({ author: "WJayadana", ...data });
+    }
+
+    const email = data?.results?.otp_value;
+
+    if (!email) {
+      return c.json({
+        author: "WJayadana",
+        success: false,
+        message: "Failed to get OTP email from response",
+      });
+    }
+
+    return c.json({
+      author: "WJayadana",
+      status: "success",
+      email: email,
+      message: `OTP has been sent to ${email}. Please check your email.`,
+    });
+  } catch (err) {
+    return c.json({
+      author: "WJayadana",
+      success: false,
+      message: `Unexpected error: ${err.message}`,
+    });
+  }
+});
+
+app.post("/api/token", async (c) => {
+  try {
+    const { username, otp } = await c.req.json();
+
+    if (!username || !otp) {
+      return c.json({
+        author: "WJayadana",
+        success: false,
+        message: "Username and OTP are required.",
+      });
+    }
+
+    const payload = qs.stringify({
+      username,
+      password: otp,
+      ...OK_CONSTANTS,
+    });
+
+    const res = await fetch("https://app.orderkuota.com/api/v2/login", {
+      method: "POST",
+      headers: OK_HEADERS,
+      body: payload,
+    });
+
+    const data = await res.json();
+
+    if (data?.success === false) {
+      return c.json({ author: "WJayadana", ...data });
+    }
+
+    if (!data?.results?.token) {
+      return c.json({
+        author: "WJayadana",
+        success: false,
+        message: "Token not found in response.",
+      });
+    }
+
+    return c.json({
+      author: "WJayadana",
+      status: "success",
+      token: data.results.token,
+      id: data.results.id,
+      name: data.results.name,
+      username: data.results.username,
+      balance: data.results.balance,
+      message: "Token successfully obtained.",
+    });
+  } catch (err) {
+    return c.json({
+      author: "WJayadana",
+      success: false,
+      message: `Unexpected error: ${err.message}`,
+    });
+  }
+});
+
+app.post("/api/qris-ajaib", async (c) => {
+  try {
+    const { username, token, amount = 1000 } = await c.req.json();
+
+    if (!username || !token) {
+      return c.json({
+        author: "WJayadana",
+        success: false,
+        message: "Username and token are required.",
+      });
+    }
+
+    const timestamp = Date.now().toString();
+    const payload = qs.stringify({
+      ...OK_CONSTANTS,
+      auth_username: username,
+      auth_token: token,
+      request_time: timestamp,
+      "requests[qris_ajaib][amount]": amount.toString(),
+    });
+
+    const res = await fetch("https://app.orderkuota.com/api/v2/get", {
+      method: "POST",
+      headers: OK_HEADERS,
+      body: payload,
+    });
+
+    const data = await res.json();
+    return c.json({ author: "WJayadana", ...data });
+  } catch (err) {
+    return c.json({
+      author: "WJayadana",
+      success: false,
+      message: `Unexpected error: ${err.message}`,
+    });
+  }
+});
+
+app.post("/api/qris-history", async (c) => {
+  try {
+    const { username, token, historyType = "qris_history", options = {} } = await c.req.json();
+
+    if (!username || !token) {
+      return c.json({
+        author: "WJayadana",
+        success: false,
+        message: "Username and token are required.",
+      });
+    }
+
+    const timestamp = Date.now().toString();
+    const tokenId = token.split(":")[0];
+
+    const payload = {
+      app_reg_id: OK_CONSTANTS.app_reg_id,
+      phone_uuid: OK_CONSTANTS.phone_uuid,
+      phone_model: OK_CONSTANTS.phone_model,
+      [`requests[${historyType}][keterangan]`]: options.keterangan || "",
+      [`requests[${historyType}][jumlah]`]: options.jumlah || "",
+      request_time: timestamp,
+      phone_android_version: OK_CONSTANTS.phone_android_version,
+      app_version_code: OK_CONSTANTS.app_version_code,
+      auth_username: username,
+      [`requests[${historyType}][page]`]: options.page || "1",
+      auth_token: token,
+      app_version_name: OK_CONSTANTS.app_version_name,
+      ui_mode: OK_CONSTANTS.ui_mode,
+      [`requests[${historyType}][dari_tanggal]`]: options.dari_tanggal || "",
+      "requests[0]": "account",
+      [`requests[${historyType}][ke_tanggal]`]: options.ke_tanggal || "",
+    };
+
+    const res = await fetch(
+      `https://app.orderkuota.com/api/v2/qris/mutasi/${tokenId}`,
+      {
+        method: "POST",
+        headers: OK_HEADERS,
+        body: qs.stringify(payload),
       }
-    });
+    );
 
-  } catch (error) {
-    return jsonResponse({
-      ok: false,
-      error: error.message || 'Terjadi kesalahan pada AI'
-    }, 500);
+    const data = await res.json();
+    return c.json({ author: "WJayadana", ...data });
+  } catch (err) {
+    return c.json({
+      author: "WJayadana",
+      success: false,
+      message: `Unexpected error: ${err.message}`,
+    });
   }
-}
+});
+
+export default app;
